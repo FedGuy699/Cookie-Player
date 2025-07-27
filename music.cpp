@@ -456,7 +456,7 @@ int main(int argc, char* argv[]) {
     nodelay(stdscr, TRUE);
 
     while (true) {
-        clear();
+        erase();
         int h, w;
         getmaxyx(stdscr, h, w);
 
@@ -493,7 +493,8 @@ int main(int argc, char* argv[]) {
         draw_separator(h - 4, w);
         draw_playback_bar(h, w, state);
 
-        refresh();
+        wnoutrefresh(stdscr);
+        doupdate();
 
         ch = getch();
         if (ch == 'q' || ch == 'Q') break;
