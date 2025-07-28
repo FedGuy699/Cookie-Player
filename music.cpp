@@ -456,7 +456,7 @@ int main(int argc, char* argv[]) {
         if (pb_thread.joinable()) pb_thread.join();
     };
 
-    nodelay(stdscr, TRUE);
+    halfdelay(1);
 
     while (true) {
         erase();
@@ -574,7 +574,7 @@ int main(int argc, char* argv[]) {
             });
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
 
