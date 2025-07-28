@@ -194,6 +194,9 @@ struct PlaybackState {
     std::string current_file;
     std::atomic<bool> paused{false};
 
+    std::atomic<bool> track_finished{false};
+
+
     std::vector<char> remote_file_data;
     MemoryFile mem_file{};
 };
@@ -521,14 +524,13 @@ int main(int argc, char* argv[]) {
                     start_playback(state, fp, false);
                 }
 
-                pb_thread = std::thread([&state]() {
+                pb_thread = std::thread([&]() {
                     while (state.playing && !state.stop_requested) {
                         ma_uint64 cur = state.current_frame.load();
                         ma_uint64 len = state.total_frames.load();
-
                         if (len > 0 && cur >= len) {
-                            stop_playback(state);
-                            break;
+                            state.track_finished = true;
+                            return;
                         }
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
@@ -540,8 +542,41 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        if (state.track_finished) {
+            state.track_finished = false;
+            cleanup_thread(); 
+
+            highlight = (highlight + 1) % files.size();
+
+            std::string next_fp;
+            if (is_url) {
+                next_fp = path + (path.back() == '/' ? "" : "/") + files[highlight];
+                if (!username.empty()) {
+                    start_playback(state, next_fp, true, username, password);
+                } else {
+                    start_playback(state, next_fp, true);
+                }
+            } else {
+                next_fp = path + "/" + files[highlight];
+                start_playback(state, next_fp, false);
+            }
+
+            pb_thread = std::thread([&]() {
+                while (state.playing && !state.stop_requested) {
+                    ma_uint64 cur = state.current_frame.load();
+                    ma_uint64 len = state.total_frames.load();
+                    if (len > 0 && cur >= len) {
+                        state.track_finished = true;
+                        return;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+            });
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+
 
     cleanup_thread();
     endwin();
