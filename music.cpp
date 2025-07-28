@@ -466,7 +466,7 @@ int main(int argc, char* argv[]) {
         draw_header(w, path);
         draw_separator(1, w);
 
-        int list_height = h - 6;
+        int list_height = h - 7;
 
         if (highlight < start_idx) start_idx = highlight;
         else if (highlight >= start_idx + list_height) start_idx = highlight - list_height + 1;
