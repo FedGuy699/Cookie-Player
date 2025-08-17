@@ -13,6 +13,8 @@
 #include <curl/curl.h>
 #include <regex>
 #include <cctype>
+#include <locale.h>
+#include <codecvt>
 
 
 #define COLOR_BG 0
@@ -22,6 +24,14 @@
 #define COLOR_PLAYBACK 4
 #define COLOR_PROGRESS 5
 #define COLOR_INPUT 6
+
+std::wstring utf8_to_wstring(const std::string& str) {
+    std::wstring ws(str.size(), L'\0');
+    std::mbstowcs(&ws[0], str.c_str(), str.size());
+    ws.resize(std::wcslen(ws.c_str()));
+    return ws;
+}
+
 
 std::string url_decode(const std::string &value) {
     std::string result;
@@ -399,6 +409,7 @@ std::string get_input(const std::string &prompt, bool hide_input = false) {
 }
 
 int main(int argc, char* argv[]) {
+    setlocale(LC_ALL, "");
     initscr();
     noecho();
     cbreak();
@@ -482,7 +493,9 @@ int main(int argc, char* argv[]) {
             }
 
             std::string prefix = (state.playing && display_name == state.current_file) ? "~ " : "  ";
-            mvprintw(i + 2, 0, "%s%s", prefix.c_str(), display_name.c_str());
+            std::wstring wname = utf8_to_wstring(prefix + display_name);
+            mvaddwstr(i + 2, 0, wname.c_str());
+
 
             if (idx == highlight) {
                 attroff(COLOR_PAIR(COLOR_HIGHLIGHT) | A_BOLD);
