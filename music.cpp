@@ -450,6 +450,14 @@ int main(int argc, char* argv[]) {
     } else {
         files = get_local_music_files(path);
     }
+    
+    std::sort(files.begin(), files.end(), [](const std::string &a, const std::string &b) {
+        std::string A = a, B = b;
+        std::transform(A.begin(), A.end(), A.begin(), ::tolower);
+        std::transform(B.begin(), B.end(), B.begin(), ::tolower);
+        return A < B;
+    });
+
 
     if (files.empty()) {
         endwin();

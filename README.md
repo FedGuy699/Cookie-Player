@@ -8,4 +8,4 @@
 
 ## Build
 
-    g++ -s "$srcdir/Cookie-Player/music.cpp" -o cookie -lncurses -lcurl
+    g++ -s "music.cpp" -o cookie -lncurses -lcurl
